@@ -62,6 +62,8 @@ const run = (args) => {
     console.log("Structurize Errors:", structurizeErrors);
   }
 
+  console.log(JSON.stringify(structurizedMsg, null, 2));
+
   const result = jute.transform(structurizedMsg, templateFn);
 
   console.log(JSON.stringify(result, null, 2));

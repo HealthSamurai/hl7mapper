@@ -15,7 +15,7 @@ entry:
         gender: $ PID.8 |> translateCode("gender")
 
         name:
-          $map: PID.5
+          $map: $ PID.5
           $as: name
           $body:
             period:
@@ -36,7 +36,7 @@ entry:
             text: '{{name.5}} {{name.2}} {{name.3}} {{name.1}} {{name.4}} {{name.6}}'
 
         address:
-          $map: PID.11
+          $map: $ PID.11
           $as: addr
           $body:
             line:
@@ -91,7 +91,7 @@ entry:
                 text: Driver License
 
         telecom:
-          $map: PID.13 | PID.14
+          $map: $ PID.13 | PID.14
           $as: tel
           $body:
             value: $ tel.1
@@ -108,7 +108,7 @@ entry:
             #   system: "phone"
 
         contact:
-          $map: NK1
+          $map: $ NK1
           $as: nk1
           $body:
             period:
