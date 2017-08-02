@@ -1,0 +1,7 @@
+- - http
+  - url: http://mlapshin.dev.aidbox.io/fhir
+    method: post
+    headers:
+      content-type: application/json
+    data:
+      $include: 'mappings/adt.yml'

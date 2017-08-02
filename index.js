@@ -3,33 +3,39 @@ const server = require("./server");
 const parseArgs = require('minimist');
 const fs = require("fs");
 const jute = require('./jute.js');
+const sideEffects = require('./sideEffects.js');
 
-const messageHandler = (msg, msh) => {
-  const parsedMsg = hl7grok.grok(msg, {strict: false});
-  console.log("!!!!!!!!!!!!!", JSON.stringify(parsedMsg, null, 2));
+const makeMessageHandler = (options) => {
+  return (msg, msh) => {
+    const [parsedMsg, parseErrors] = hl7grok.grok(msg, {
+      strict: false,
+      version: options.version
+    });
 
-  return Promise.resolve(true);
+    if (parseErrors.length > 0) {
+      console.log("Parse Errors:", parseErrors);
+    }
+
+    const [structurizedMsg, structurizeErrors] = hl7grok.structurize(parsedMsg, {
+      version: options.version
+    });
+
+    if (structurizeErrors.length > 0) {
+      console.log("Structurize Errors:", structurizeErrors);
+    }
+
+    const se = jute.transform(structurizedMsg, options.template);
+    sideEffects.doSideEffects(se);
+
+    return Promise.resolve(true);
+  };
 };
 
-// const msg = fs.readFileSync("./samples/adt.hl7", 'utf8').replace(/\n/g, "\r");
-//
-// const mapping = yaml.safeLoad(fs.readFileSync("./samples/adt.yml", 'utf8'));
-
-// const parsedMsg = hl7grok.grok(msg, {strict: false});
-
-// const structurizedMsg = hl7grok.structurize(parsedMsg[0]);
-
-// console.log("!!!!!!", JSON.stringify(structurizedMsg[1], null, 2));
-
-// const ast = jute.compile(mapping);
-// const transformed = jute.transform(structurizedMsg[0], ast, { directives: {} });
-
-// console.log(JSON.stringify(removeBlanks(transformed), null, 2));
-
-// daemon.startServer(4040, 'localhost', messageHandler);
-
 const runServer = (args) => {
-  console.log("!!!!! start server");
+  server.startServer(Number(args._[1]), args._[2], makeMessageHandler({
+    template: args['template'],
+    version: args['hl7-version']
+  }));
 };
 
 const help = (args) => {
@@ -38,7 +44,10 @@ const help = (args) => {
       "Commands are:\n\n" +
       "server <host> <port>                 Starts HL7 server\n" +
       "run <message file> <template file>   Performs single run for one HL7 message\n" +
-      "help                                 Displays this message");
+      "help                                 Displays this message\n\n" +
+      "Options are:\n" +
+      "--template / -t                      Index template name (default to /mappings/dispatch.yml)\n" +
+      "--hl7-version / -j                   Override HL7 version of incoming messages");
 };
 
 const run = (args) => {
@@ -62,11 +71,11 @@ const run = (args) => {
     console.log("Structurize Errors:", structurizeErrors);
   }
 
-  console.log(JSON.stringify(structurizedMsg, null, 2));
+  console.log("Parsed message:\n", JSON.stringify(structurizedMsg, null, 2));
 
   const result = jute.transform(structurizedMsg, templateFn);
 
-  console.log(JSON.stringify(result, null, 2));
+  console.log("Transform result:\n", JSON.stringify(result, null, 2));
 };
 
 const commands = {
@@ -77,7 +86,14 @@ const commands = {
 
 const main = (argv) => {
   const opts = {
-    string: ['fhir-url']
+    string: ['fhir-url', 'template'],
+    default: {
+      'template': __dirname + "/mappings/dispatch.yml"
+    },
+    alias: {
+      't': 'template',
+      'j': 'hl7-version'
+    }
   };
 
   const parsedArgs = parseArgs(argv.slice(2), opts);

@@ -62,6 +62,10 @@ removeBlanks = function(rootNode) {
 
 const AST_CACHE = {};
 
+const evalInclude = (jute, node, scope, options) => {
+  return transform(scope, node.$include);
+};
+
 const transform = (data, templateFile) => {
   let ast = AST_CACHE[templateFile];
 
@@ -71,7 +75,7 @@ const transform = (data, templateFile) => {
     AST_CACHE[templateFile] = ast;
   }
 
-  return removeBlanks(jute.transform(data, ast));
+  return removeBlanks(jute.transform(data, ast, { directives: { $include: evalInclude } }));
 };
 
 module.exports = {
