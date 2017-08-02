@@ -46,7 +46,7 @@ const help = (args) => {
       "run <message file> <template file>   Performs single run for one HL7 message\n" +
       "help                                 Displays this message\n\n" +
       "Options are:\n" +
-      "--template / -t                      Index template name (default to /mappings/dispatch.yml)\n" +
+      "--template / -t                      Index template name (default to /mappings/index.yml)\n" +
       "--hl7-version / -j                   Override HL7 version of incoming messages");
 };
 
@@ -59,13 +59,18 @@ const run = (args) => {
   }
 
   const msg = fs.readFileSync(msgFn, 'utf8').replace(/\n/g, "\r");
-  const [parsedMsg, parseErrors] = hl7grok.grok(msg, {strict: false});
+  const [parsedMsg, parseErrors] = hl7grok.grok(msg, {
+    strict: false,
+    version: args['hl7-version']
+  });
 
   if (parseErrors.length > 0) {
     console.log("Parse Errors:", parseErrors);
   }
 
-  const [structurizedMsg, structurizeErrors] = hl7grok.structurize(parsedMsg);
+  const [structurizedMsg, structurizeErrors] = hl7grok.structurize(parsedMsg, {
+    version: args['hl7-version']
+  });
 
   if (structurizeErrors.length > 0) {
     console.log("Structurize Errors:", structurizeErrors);
@@ -86,9 +91,10 @@ const commands = {
 
 const main = (argv) => {
   const opts = {
-    string: ['fhir-url', 'template'],
+    string: ['fhir-url', 'template', 'hl7-version'],
     default: {
-      'template': __dirname + "/mappings/dispatch.yml"
+      'template': __dirname + "/mappings/index.yml",
+      'hl7-version': null
     },
     alias: {
       't': 'template',

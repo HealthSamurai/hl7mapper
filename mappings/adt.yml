@@ -17,97 +17,56 @@ entry:
         name:
           $map: $ PID.5
           $as: name
-          $body:
-            period:
-              start: $ name.12 |> dateTime
-              end: $ name.13 |> dateTime
-
-            given:
-              - $ name.2 |> capitalize
-            middle:
-              - $ name.3 |> capitalize
-            family:
-              - $ name.1 |> capitalize
-            suffix:
-              - $ name.4 |> capitalize
-            prefix:
-              - $ name.5 |> capitalize
-
-            text: '{{name.5}} {{name.2}} {{name.3}} {{name.1}} {{name.4}} {{name.6}}'
+          $body: $ name |> xpnToName
 
         address:
           $map: $ PID.11
           $as: addr
-          $body:
-            line:
-              - $ addr.1
-              - $ addr.2
-              - $ addr.3
-
-            city: $ addr.3
-            state: $ addr.4
-            postalCode: $ addr.5
-            country: $ addr.6
-            period:
-              start: $ addr.12 |> dateTime
-              end: $ addr.13 |> dateTime
-            text: "{{addr.1}} {{addr.2}} {{addr.3}} {{addr.4}} {{addr.5}} {{addr.6}}"
+          $body: $ addr |> xadToAddress
 
         identifier:
-          $filter: compact
+          $filter: flatten
           $body:
-            - $map: PID.2 | PID.3 | PID.4 | PID.18
-              $as: id
+            - - $if: $ PID.2
+                $then:
+                  value: $ PID.2.1
+                  system: http://some-hospital.com/patients
+
+            - $map: $ PID.3
+              $as: PID3
               $body:
-                $if: $ id.1
-                value: $ id.1
-                system:
-                  $switch: $ id.5
-                  'MR': urn:oid:2.16.840.1.113883.4.3.42
-                  'PN': urn:oid:2.16.840.1.113883.4.3.45
-                  'AN': urn:oid:2.16.840.1.113883.4.3.46
+                value: $ PID3.1
+                system: http://some-hospital.com/patients
 
-                period:
-                  start: $ id.7 |> dateTime
-                  end: $ id.8 |> dateTime
+            - $map: $ PID.4
+              $as: PID4
+              $body:
+                value: $ PID4.1
+                system: http://some-hospital.com/patients
 
-                type:
-                  text:
-                    $switch: $ id.5
-                    'MR': Medical Record Number
-                    'PN': Patient Number
-                    'AN': Account Number
-
-            - $if: $ PID.19
-              $then:
-                value: $ PID.19
-                system: http://hl7.org/fhir/sid/us-ssn
-                type:
-                  text: Social Security Number
-
-            - $if: $ PID.20.1
-              $then:
-                value: '{{PID.20.1}} {{PID.20.2}}'
-                system: urn:oid:2.16.840.1.113883.4.3.36
-                type:
-                  text: Driver License
+            - - $if: $ PID.20.1
+                $then:
+                  value: '{{PID.20.1}} {{PID.20.2}}'
+                  system: urn:oid:2.16.840.1.113883.4.3.36
+                  type:
+                    text: Driver License
 
         telecom:
-          $map: $ PID.13 | PID.14
-          $as: tel
+          $filter: flatten
           $body:
-            value: $ tel.1
-            system: "phone"
+            - $map: $ PID.13
+              $as: tel
+              $body:
+                value: $ tel.1
+                system: "phone"
+                use: home
 
-            # $if: tel.1
-            # $body:
-            #   use:
-            #     $case: tel.path
-            #     'PID.13': home
-            #     'PID.14': work
-
-            #   value: $ tel.1
-            #   system: "phone"
+            - $map: $ PID.14
+              $as: tel
+              $body:
+                value: $ tel.1
+                system: "phone"
+                use: work
 
         contact:
           $map: $ NK1
@@ -122,42 +81,8 @@ entry:
               coding:
                 - code: $ nk1.3.1
 
-            name:
-              period:
-                start: $ nk1.2.0.12 |> dateTime
-                end: $ nk1.2.0.13 |> dateTime
-              use: $ nk1.2.0.7
-
-              given:
-                - $ nk1.2.0.2
-              family:
-                - $ nk1.2.0.1
-              middle:
-                - $ nk1.2.0.3
-              suffix:
-                - $ nk1.2.0.4
-              prefix:
-                - $ nk1.2.0.5
-              text: '{{nk1.2.0.5}} {{nk1.2.0.2}} {{nk1.2.0.3}} {{nk1.2.0.1}} {{nk1.2.0.4}} {{nk1.2.0.6}}'
-
-            address:
-              line:
-                - $ nk1.4.0.1
-                - $ nk1.4.0.2
-                - $ nk1.4.0.3
-
-              city: $ nk1.4.0.3
-              state: $ nk1.4.0.4
-              postalCode: $ nk1.4.0.5
-              country: $ nk1.4.0.6
-              period:
-                start: $ nk1.4.0.12 |> dateTime
-                end: $ nk1.4.0.13 |> dateTime
-
-              text: "{{nk1.4.0.1}} {{nk1.4.0.2}} {{nk1.4.0.3}} {{nk1.4.0.4}} {{nk1.4.0.5}} {{nk1.4.0.6}}"
-
-              type: $ nk1.4.0.7
-              use: 'Mailing Address'
+            name: $ nk1.2.0 |> xpnToName
+            address: $ nk1.4.0 |> xadToAddress
 
     # - request:
     #     method: POST

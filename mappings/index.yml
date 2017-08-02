@@ -1,0 +1,46 @@
+$let:
+  xadToAddress:
+    $fn: ['xad']
+    $body:
+      line:
+        - $ xad.1
+        - $ xad.2
+        - $ xad.3
+
+      city: $ xad.3
+      state: $ xad.4
+      postalCode: $ xad.5
+      country: $ xad.6
+      period:
+        start: $ xad.12 |> dateTime
+        end: $ xad.13 |> dateTime
+      text: "{{xad.1}} {{xad.2}} {{xad.3}} {{xad.4}} {{xad.5}} {{xad.6}}"
+
+  xpnToName:
+    $fn: ['xpn']
+    $body:
+      period:
+        start: $ xpn.12 |> dateTime
+        end: $ xpn.13 |> dateTime
+
+      given:
+        - $ xpn.2 |> capitalize
+      middle:
+        - $ xpn.3 |> capitalize
+      family:
+        - $ xpn.1 |> capitalize
+      suffix:
+        - $ xpn.4 |> capitalize
+      prefix:
+        - $ xpn.5 |> capitalize
+
+      text: '{{xpn.5}} {{xpn.2}} {{xpn.3}} {{xpn.1}} {{xpn.4}} {{xpn.6}}'
+
+$body:
+  - - http
+    - url: http://mlapshin.dev.aidbox.io/fhir
+      method: post
+      headers:
+        content-type: application/json
+      data:
+        $include: 'mappings/adt.yml'

@@ -66,6 +66,18 @@ const evalInclude = (jute, node, scope, options) => {
   return transform(scope, node.$include);
 };
 
+const evalFn = (jute, node, scope, options) => {
+  return (...args) => {
+    const fnScope = jute.makeChildScope(this);
+
+    node.$fn.forEach((argName, index) => {
+      fnScope[argName] = args[index];
+    });
+
+    return jute.evalNode(node.$body, fnScope, options);
+  };
+};
+
 const transform = (data, templateFile) => {
   let ast = AST_CACHE[templateFile];
 
@@ -75,7 +87,7 @@ const transform = (data, templateFile) => {
     AST_CACHE[templateFile] = ast;
   }
 
-  return removeBlanks(jute.transform(data, ast, { directives: { $include: evalInclude } }));
+  return removeBlanks(jute.transform(data, ast, { directives: { $include: evalInclude, $fn: evalFn } }));
 };
 
 module.exports = {
