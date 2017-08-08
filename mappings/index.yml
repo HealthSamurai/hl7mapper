@@ -16,6 +16,15 @@ $let:
         end: $ xad.13 |> dateTime
       text: "{{xad.1}} {{xad.2}} {{xad.3}} {{xad.4}} {{xad.5}} {{xad.6}}"
 
+  ceToCodeableConcept:
+    $fn: ['ce', 'codesystem']
+    $body:
+      text: $ ce.2
+      coding:
+        - code: $ ce.1
+          display: $ ce.2
+          system: $ codesystem
+
   xpnToName:
     $fn: ['xpn']
     $body:
@@ -36,6 +45,8 @@ $let:
 
       text: '{{xpn.5}} {{xpn.2}} {{xpn.3}} {{xpn.1}} {{xpn.4}} {{xpn.6}}'
 
+  event: '{{ MSH.9.1 }}_{{ MSH.9.2 }}'
+
 $body:
   - - http
     - url: http://mlapshin.dev.aidbox.io/fhir
@@ -43,4 +54,11 @@ $body:
       headers:
         content-type: application/json
       data:
-        $include: 'mappings/adt.yml'
+        $if: $ MSH.9.1 = 'SIU'
+        $then:
+          $include: 'mappings/appointment.yml'
+          $locals:
+            ais: $ RESOURCES.0.SERVICE.0.AIS
+            aips: $ RESOURCES.0.PERSONNEL_RESOURCE.*.AIP
+            sch: $ SCH
+            pid: $ PATIENT.0.PID

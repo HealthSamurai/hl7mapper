@@ -9,7 +9,7 @@ const doHttp = (request) => {
   return axios
     .request(options)
     .then(result => {
-      console.log("request finished");
+      console.log("request finished", JSON.stringify(result.data, null, 2));
       return Promise.resolve(result);
     })
     .catch(err => {

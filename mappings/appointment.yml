@@ -1,0 +1,63 @@
+$let:
+  patientId: $ pid.3.0.1 |> md5
+$body:
+  resourceType: Bundle
+  type: transaction
+  entry:
+    - request:
+        url: /Patient/{{ patientId }}
+        method: PUT
+      resource:
+        $include: mappings/patient.yml
+        $locals:
+          patientId: $ patientId
+          pid: $ pid
+
+    - request:
+        url: /Appointment/{{ sch.1 |> md5 }}
+        method: PUT
+      resource:
+        resourceType: Appointment
+        id: $ sch.1 |> md5
+        contained:
+          $map: $ aips
+          $as: aip
+          $body:
+            resourceType: Practitioner
+            id: $ aip.3.0.1 |> md5
+            name:
+              - given:
+                  - $ aip.3.0.3
+                family:
+                  - $ aip.3.0.2
+                suffix:
+                  - $ aip.3.0.4
+
+        identifier:
+          $filter: compact
+          $body:
+            - $if: $ sch.1
+              $then:
+                value: $ sch.1.1
+                system: http://my-hospital.com/appointment-id
+
+        status: $ sch.25.1 |> toLowerCase
+        reason: $ ais.3 |> ceToCodeableConcept('http://my-hospital.com/appointment-reason')
+        minutesDuration: $ sch.10.1 = 'MIN' && parseInt(sch.9)
+        start: $ sch.11.0.4
+        end: $ sch.11.0.5
+        participant:
+          $filter: flatten
+          $body:
+            - actor:
+                reference: Patient/{{ patientId }}
+              status: accepted
+
+            - $map: $ aips
+              $as: aip
+              $body:
+                status: accepted
+                actor:
+                  reference: '#{{ aip.3.0.1 |> md5 }}'
+                type:
+                  - $ aip.4 |> ceToCodeableConcept('http://my-hospital.com/appointment-participant-role')
