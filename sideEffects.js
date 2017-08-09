@@ -18,7 +18,6 @@ const doHttp = (request) => {
     });
 };
 
-
 const sideEffectFunctions = {
   "console.log": console.log,
   http: doHttp

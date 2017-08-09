@@ -63,13 +63,17 @@ removeBlanks = function(rootNode) {
 const AST_CACHE = {};
 
 const evalInclude = (jute, node, scope, options) => {
-  const s = jute.makeChildScope(scope);
+  let s = scope;
 
-  Object.keys(node.$locals).forEach(key => {
-    s[key] = jute.evalNode(node.$locals[key], scope, options);
-  });
+  if (node.$locals && typeof(node.$locals) === 'object') {
+    s = jute.makeChildScope(scope);
 
-  return transform(s, node.$include);
+    Object.keys(node.$locals).forEach(key => {
+      s[key] = jute.evalNode(node.$locals[key], scope, options);
+    });
+  }
+
+  return transform(s, jute.evalNode(node.$include, s, options));
 };
 
 const evalFn = (jute, node, scope, options) => {
