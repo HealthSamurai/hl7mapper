@@ -1,0 +1,28 @@
+- - http
+  - url: http://healthceo.dev.aidbox.io/fhir
+    method: post
+    headers:
+      content-type: application/json
+    data:
+      $let:
+        patientId: $ PID.3.0.1 |> md5
+      $body:
+        resourceType: Bundle
+        type: transaction
+        entry:
+          - request:
+              url: /Patient/{{ patientId }}
+              method: PUT
+            resource:
+              $include: mappings/partials/patient.yml
+              $locals:
+                patientId: $ patientId
+                pid: $ PID
+          - request:
+              url: /Encounter/{{ PV1.19 |> md5 }}
+              method: PUT
+            resource:
+              $include: mappings/partials/encounter.yml
+              $locals:
+                patientId: $ patientId
+                pv1: $ PV1

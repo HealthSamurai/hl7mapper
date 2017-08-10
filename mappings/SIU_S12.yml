@@ -4,11 +4,9 @@
     headers:
       content-type: application/json
     data:
-      $if: $ MSH.9.1 = 'SIU'
-      $then:
-        $include: 'mappings/partials/appointment.yml'
-        $locals:
-          ais: $ RESOURCES.0.SERVICE.0.AIS
-          aips: $ RESOURCES.0.PERSONNEL_RESOURCE.*.AIP
-          sch: $ SCH
-          pid: $ PATIENT.0.PID
+      $include: 'mappings/partials/appointment.yml'
+      $locals:
+        ais: $ RESOURCES.0.SERVICE.0.AIS
+        aips: $ RESOURCES.0.PERSONNEL_RESOURCE.*.AIP
+        sch: $ SCH
+        pid: $ PATIENT.0.PID

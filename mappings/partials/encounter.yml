@@ -1,0 +1,16 @@
+$let:
+  encounterClassMap:
+    I: inpatient
+    O: outpatient
+    E: emergency
+
+$body:
+  resourceType: Encounter
+  id: $ pv1.19 |> md5
+  patient:
+    reference: Patient/{{ patientId }}
+  class: $ encounterClassMap.(pv1.2)
+
+  period:
+    start: $ pv1.44
+    end: $ pv1.45
