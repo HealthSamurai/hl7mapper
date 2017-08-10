@@ -1,6 +1,5 @@
 const axios = require('axios');
 const fs = require('fs');
-const uuid = require('uuid')
 
 const msg = fs.readFileSync(process.argv[2], 'utf-8');
 

@@ -1,5 +1,5 @@
 - - http
-  - url: http://mlapshin.dev.aidbox.io/fhir
+  - url: http://healthceo.dev.aidbox.io/fhir
     method: post
     headers:
       content-type: application/json

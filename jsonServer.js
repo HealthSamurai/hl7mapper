@@ -1,6 +1,7 @@
 const axios = require("axios");
 const jute = require('./jute.js');
 const hl7grok = require('./hl7grok/lib/hl7grok.js');
+const sideEffects = require('./sideEffects.js');
 
 const POLL_INTERVAL = 5000;
 
@@ -26,20 +27,22 @@ const handleMessage = (msg) => {
   }
 
   try {
-    // const se = jute.transform(Object.assign(structurizedMsg, {
-    //   MESSAGE_TYPE: msg.messageType,
-    //   INSTANCE: msg.instance
-    // }), './mappings/index.yml');
+    const se = jute.transform(Object.assign(structurizedMsg, {
+      MESSAGE_TYPE: msg.messageType,
+      INSTANCE: msg.instance
+    }), './mappings/index.yml');
+
+    return sideEffects.doSideEffects(se).then(r => {
+      msg.messageStatus = 'Processed';
+      msg.error = '';
+      return Promise.resolve(msg);
+    });
   } catch (err) {
     console.log("Error during mapping:", err);
     msg.messageStatus = 'Error';
     msg.error = "Error during mapping: " + err.message + "\n" + err.stack;
     return Promise.resolve(msg);
   }
-
-  msg.messageStatus = 'Processed';
-  msg.error = '';
-  return Promise.resolve(msg);
 };
 
 const pollFn = (baseUrl) => {

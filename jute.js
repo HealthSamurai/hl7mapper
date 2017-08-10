@@ -88,6 +88,21 @@ const evalFn = (jute, node, scope, options) => {
   };
 };
 
+const jsMapping = (jute, node, scope, options) => {
+  let s = scope;
+
+  if (node.$locals && typeof(node.$locals) === 'object') {
+    s = jute.makeChildScope(scope);
+
+    Object.keys(node.$locals).forEach(key => {
+      s[key] = jute.evalNode(node.$locals[key], scope, options);
+    });
+  }
+
+  const module = require("./" + jute.evalNode(node.$jsMapping, s, options));
+  return module.doMapping(s);
+};
+
 const transform = (data, templateFile) => {
   let ast = AST_CACHE[templateFile];
 
@@ -97,7 +112,7 @@ const transform = (data, templateFile) => {
     AST_CACHE[templateFile] = ast;
   }
 
-  return removeBlanks(jute.transform(data, ast, { directives: { $include: evalInclude, $fn: evalFn } }));
+  return removeBlanks(jute.transform(data, ast, { directives: { $include: evalInclude, $fn: evalFn, $jsMapping: jsMapping } }));
 };
 
 module.exports = {

@@ -22,7 +22,7 @@
               url: /Encounter/{{ PV1.19 |> md5 }}
               method: PUT
             resource:
-              $include: mappings/partials/encounter.yml
+              $jsMapping: mappings/js/encounter.js
               $locals:
                 patientId: $ patientId
                 pv1: $ PV1
