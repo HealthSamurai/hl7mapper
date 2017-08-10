@@ -26,3 +26,10 @@
               $locals:
                 patientId: $ patientId
                 pv1: $ PV1
+
+            # JUTE mapping, uncomment it if you need it
+            # resource:
+            #   $include: mappings/partials/encounter.yml
+            #   $locals:
+            #     patientId: $ patientId
+            #     pv1: $ PV1
