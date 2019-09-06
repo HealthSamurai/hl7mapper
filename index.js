@@ -33,7 +33,7 @@ const makeMessageHandler = (options) => {
 };
 
 const runServer = (args) => {
-  server.startServer(Number(args._[1]), args._[2], makeMessageHandler({
+  server.startServer(Number(args._[1]), args._[2] || '127.0.0.1', makeMessageHandler({
     template: args['template'],
     version: args['hl7-version']
   }));
@@ -47,7 +47,7 @@ const help = (args) => {
   console.log(
     "Usage: hl7mapper [command]\n" +
       "Commands are:\n\n" +
-      "server <host> <port>                 Starts HL7 server\n" +
+      "server <port> [host]                 Starts HL7 server\n" +
       "json-server <base-url>               Polls URL for HL7 messages in JSON format\n" +
       "run <message> <template> <scope>     Performs single run for one HL7 message\n" +
       "help                                 Displays this message\n\n" +
