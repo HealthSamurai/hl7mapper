@@ -25,6 +25,24 @@ const sendMessage = (socket, msg) => {
   });
 };
 
+const makeMessageHandler = ({ grok, structurize, doHttp }) => {
+  return (msg, msh) => {
+    const [parsedMsg, parseErrors] = grok(msg);
+
+    if (parseErrors.length > 0) {
+      return Promise.reject(new Error(`Parse Errors: ${parseErrors}`));
+    }
+
+    const [structurizedMsg, structurizeErrors] = structurize(parsedMsg);
+
+    if (structurizeErrors.length > 0) {
+      return Promise.reject(new Error(`Structurize Errors: ${structurizeErrors}`));
+    }
+
+    return doHttp(structurizedMsg);
+  };
+};
+
 const buildAck = (originalMsh, success, errorMessage) => {
   const segments = [];
 
@@ -109,7 +127,7 @@ const messageReceived = (msg, socket, handler) => {
   });
 };
 
-const startHl7Server = (port, host, messageHandler) => {
+const startHl7Server = async (port, host, messageHandler) => {
   const removeHeaderBytes = (m) => {
     return m.substr(MESSAGE_HEADER.length);
   };
@@ -144,8 +162,9 @@ const startHl7Server = (port, host, messageHandler) => {
       return sock.destroy();
     });
 
-    return sock.on('end', () => {
-      return console.log(`HL7 connection from ${ip} was closed`);
+    sock.on('end', () => {
+      // Cannot log after tests are done :|
+      // return console.log(`HL7 connection from ${ip} was closed`);
     });
   });
 
@@ -157,16 +176,14 @@ const startHl7Server = (port, host, messageHandler) => {
     return console.log(`${err}`);
   });
 
-  return new Promise((resolve, reject) => {
-    server.listen(port, host, 1024, () => {
-      console.log(`Listening for HL7 traffic at ${host}:${port}`);
-      resolve(server);
-    });
-  });
+  await server.listen(port, host, 1024);
+  console.log(`Listening for HL7 traffic at ${host}:${port}`);
+  return server;
 };
 
 module.exports = {
-  startServer: startHl7Server
+  startServer: startHl7Server,
+  makeMessageHandler
 };
 
 // const fs = require('fs');

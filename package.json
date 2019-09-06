@@ -14,5 +14,20 @@
     "moment": "^2.18.1",
     "uuid": "^3.1.0"
   },
-  "scripts": {}
+  "devDependencies": {
+    "jest": "^24.9.0",
+    "jest-mock-console": "^1.0.0",
+    "prettier": "1.18.2"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "jest": {
+    "testPathIgnorePatterns": [
+      "node_modules",
+      "hl7grok"
+    ],
+    "testRegex": "./test/.*.js$",
+    "rootDir": "."
+  }
 }
