@@ -1,21 +1,33 @@
 {
   "name": "hl7mapper",
   "version": "2017.07.05",
-  "engines": {
-    "node": ">=6.4.0"
-  },
   "private": true,
   "description": "HL7 Mapper daemon",
   "keywords": [],
   "author": "",
   "license": "",
   "dependencies": {
-    "axios": "^0.16.2",
-    "js-yaml": "3.9.1",
-    "md5": "latest",
+    "axios": "^0.19.0",
+    "js-yaml": "^3.13.1",
+    "md5": "^2.2.1",
     "minimist": "^1.2.0",
     "moment": "^2.18.1",
     "uuid": "^3.1.0"
   },
-  "scripts": {}
+  "devDependencies": {
+    "jest": "^24.9.0",
+    "jest-mock-console": "^1.0.0",
+    "prettier": "1.18.2"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "jest": {
+    "testPathIgnorePatterns": [
+      "node_modules",
+      "hl7grok"
+    ],
+    "testRegex": "./test/.*.js$",
+    "rootDir": "."
+  }
 }

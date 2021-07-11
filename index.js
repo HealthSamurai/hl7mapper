@@ -6,36 +6,12 @@ const fs = require("fs");
 const jute = require('./jute.js');
 const sideEffects = require('./sideEffects.js');
 
-const makeMessageHandler = (options) => {
-  return (msg, msh) => {
-    const [parsedMsg, parseErrors] = hl7grok.grok(msg, {
-      strict: false,
-      version: options.version
-    });
-
-    if (parseErrors.length > 0) {
-      console.log("Parse Errors:", parseErrors);
-    }
-
-    const [structurizedMsg, structurizeErrors] = hl7grok.structurize(parsedMsg, {
-      version: options.version
-    });
-
-    if (structurizeErrors.length > 0) {
-      console.log("Structurize Errors:", structurizeErrors);
-    }
-
-    const se = jute.transform(structurizedMsg, options.template);
-    sideEffects.doSideEffects(se);
-
-    return Promise.resolve(true);
-  };
-};
-
 const runServer = (args) => {
-  server.startServer(Number(args._[1]), args._[2], makeMessageHandler({
-    template: args['template'],
-    version: args['hl7-version']
+  version = args['hl7-version'];
+  server.startServer(Number(args._[1]), args._[2] || '127.0.0.1', server.makeMessageHandler({
+    grok: (msg) => hl7grok.grok(msg, { version, strict: false }),
+    structurize: (parsedMsg) => hl7grok.structurize(parsedMsg, { version }),
+    doHttp: sideEffects.doHttp
   }));
 };
 
@@ -47,7 +23,7 @@ const help = (args) => {
   console.log(
     "Usage: hl7mapper [command]\n" +
       "Commands are:\n\n" +
-      "server <host> <port>                 Starts HL7 server\n" +
+      "server <port> [host]                 Starts HL7 server\n" +
       "json-server <base-url>               Polls URL for HL7 messages in JSON format\n" +
       "run <message> <template> <scope>     Performs single run for one HL7 message\n" +
       "help                                 Displays this message\n\n" +
